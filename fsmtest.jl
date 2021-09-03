@@ -57,7 +57,7 @@ struct Whitespace <: Transition end
     STEPS
 =#
 step(::State, ::Transition) = throw(InvalidState) # default InvalidState catch-all
-step(state::Start, ::Whitespace) state end # whitespace at start is fine
+function step(state::Start, ::Whitespace) state end # whitespace at start is fine
 
 function step(state::Start, transition::Digit)
     state = Real()
