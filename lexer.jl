@@ -22,12 +22,18 @@ end
 # define alphabet (set of valid characters)
 Σ = alphabet() 
 
+q0 = IntegerIntermezzo(['3', '6'])
+
+q0 = step(q0, Digit('1'))
+q0 = step(q0, Whitespace())
+
+
 q0 = Start() # starting state
 
 transition_buffer = [Digit('2'), Digit('3'), Digit('1'), Symbol('+'), 
                 Letter('n'), Letter('u'), Letter('m'), Symbol('+'), 
                 Letter('f'), Letter('o'), Letter('o'), Symbol('+'),
-                Digit('3'), Letter('.'), Digit('1'), Digit('4'), 
+                Digit('3'), Symbol('.'), Digit('1'), Digit('4'), 
                 Symbol(';')]
 
 reduce(step, transition_buffer, init=q0)

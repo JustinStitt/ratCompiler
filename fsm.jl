@@ -39,6 +39,11 @@ struct Operator <: State
     Operator() = new([])
 end
 
+struct IntegerIntermezzo <: State
+    raw::Array{Char}
+    IntegerIntermezzo(x) = new(x)
+end
+
 #=
     END STATES
 =#
@@ -71,7 +76,16 @@ struct Whitespace <: Transition end
     STEPS
 =#
 step(::State, ::Transition) = throw(InvalidState) # default InvalidState catch-all
+
+# Origin: Start
 function step(state::Start, ::Whitespace) state end # whitespace at start is fine
+
+function step(state::Start, transition::Letter)
+    if transition == '_' return state end
+    state = Identifier()
+    push!(state.raw, transition.raw)
+    state
+end
 
 function step(state::Start, transition::Digit)
     state = Integer()
@@ -79,27 +93,15 @@ function step(state::Start, transition::Digit)
     state
 end
 
-function step(state::Integer, transition::Digit)
-    push!(state.raw, transition.raw) # cant push to string not mutable
-    state
-end
-
-function step(state::Integer, transition::Transition)
-    if transition.raw == '.' # formation of a Real
-        state = Real(state.raw)
-        return state
-    end
-    println("Found Integer: ", state.raw)
-    state = Start()
-end
-
-function step(state::Start, transition::Letter)
-    if transition.raw == '_' return state end
-    state = Identifier()
+function step(state::Start, transition::Symbol)
+    state = Symbol()
     push!(state.raw, transition.raw)
     state
 end
 
+# End Origin: Start
+
+# Origin: Identifier
 function step(state::Identifier, transition::Letter)
     push!(state.raw, transition.raw)
     state
@@ -110,36 +112,101 @@ function step(state::Identifier, transition::Digit)
     state
 end
 
-function step(state::Identifier, ::Transition)
+function step(state::Identifier, transition::Symbol)
     println("Found Identifier: ", state.raw)
-    state = Start()
-end
-
-function step(state::Real, transition::Digit)
-    push!(state.araw, transition.raw)
-    state
-end
-
-function step(state::Real, ::Transition)
-    println("Found Real: ", state.praw, state.araw)
-    state = Start()
-end
-
-function step(state::Start, transition::Symbol)
     state = Operator()
     push!(state.raw, transition.raw)
     state
 end
 
-function step(state::Operator, transition::Operator)
+function step(state::Identifier, transition::Whitespace)
+    println("Found Identifier: ", state.raw)
+    state = Start()
+end
+
+# End Origin: Identifier
+
+# Origin: Integer
+function step(state::Integer, transition::Digit)
     push!(state.raw, transition.raw)
     state
 end
 
-function step(state::Opeartor, ::Transition)
+function step(state::Integer, transition::Symbol)
+    if transition.raw != '.'
+        println("Found Integer: ", state.raw)
+        state = Operator()
+        push!(state.raw, transition.raw)
+        return state
+    end
+    state = IntegerIntermezzo(state.raw)
+end
+
+function step(state::Integer, transition::Whitespace)
+    println("Found Integer: ", state.raw)
+    state = Start()
+    state
+end
+
+# End Origin: Integer
+
+# Origin: IntegerIntermezzo
+function step(state::IntegerIntermezzo, transition::Digit)
+    state = Real(state.raw) # praw
+    push!(state.araw, transition.raw)
+    state
+end
+
+step(state::IntegerIntermezzo, ::Whitespace) = throw(InvalidState)
+
+# End Origin: IntegerIntermezzo
+
+# Origin: Real
+function step(state::Real, transition::Digit)
+    push!(state.araw, transition.raw)
+    state
+end
+
+function step(state::Real, transition::Whitespace)
+    println("Found Real: ", state.praw, state.araw)
+    state = Start()
+end
+
+function step(state::Real, transition::Symbol)
+    println("Found Real: ", state.praw, state.araw)
+    state = Operator()
+    push!(state.raw, transition.raw)
+    state
+end
+
+# End Origin: Real
+
+# Origin: Operator
+function step(state::Operator, transition::Symbol)
+    push!(state.raw, transition.raw)
+    state
+end
+
+function step(state::Operator, transition::Letter)
+    println("Found Operator:", state.raw)
+    state = Identifier()
+    push!(state.raw, transition.raw)
+    state
+end
+
+function step(state::Operator, transition::Digit)
+    println("Found Operator: ", state.raw)
+    state = Integer()
+    push!(state.raw, transition.raw)
+    state
+end
+
+function step(state::Operator, transition::Whitespace)
     println("Found Operator: ", state.raw)
     state = Start()
 end
+
+# End Origin: Operator
 
 #=
     END STEPS
