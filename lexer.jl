@@ -10,12 +10,12 @@ struct alphabet
              [x for x in 'A':'Z']...,
              '_']),
         Set(Char.('0' .+ range(0, 9, step=1))),
-        Set([';', '+', '*','/', 
-             '\\', '-', ',', '(', ')', 
+        Set([';','(',')','+', '*','/', 
+             '\\', '-', ',', 
              '[', ']', '!', '>', '<', 
              '{', '}', '%', '&', '|', '^',
              '=', '.', '?', ':', '\'', '\"']),
-        Set([' ', '\n'])
+        Set([' ', '\n']),
     )
 end
 
@@ -35,10 +35,19 @@ function parseInput(q0, inp, Σ)
     end
 end
 
-test_string = "231+num+foo+3.14;"
+function test(test_cases)
+    Σ = alphabet()
+    for case in test_cases
+        println("Input: ", case)
+        parseInput(Start(), case, Σ) # ask lexer to step through input buffer
+        display(store) # show token=>lexeme store buffer
+        empty!(store) # empty our token=>lexeme store buffer
+        println()
+    end
+end
 
-parseInput(Start(), test_string, alphabet())
+test_cases = ["231+num+foo+3.14+(6-2.45+size);/*this is a comment 3.1415;*/", 
+              "while  (fahr <= upper)   a = 23.00;  /* this is sample */"
+             ]
 
-println("Input: ", test_string)
-
-display(store)
+test(test_cases)

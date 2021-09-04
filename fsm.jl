@@ -13,6 +13,8 @@ InvalidState = ArgumentError # Define ad-hoc error piggybacking ArgumentError
 
 store = Array{Pair{DataType, String}, 1}([])
 
+separators = Set{Char}([';','(',')'])
+
 #=
     STATES
 =#
@@ -45,6 +47,16 @@ end
 struct IntegerIntermezzo <: State
     raw::Array{Char}
     IntegerIntermezzo(x) = new(x)
+end
+
+struct Comment <: State
+    raw::Array{Char}
+    Comment() = new([])
+end
+
+struct Separator <: State
+    raw::Array{Char}
+    Separator() = new([])
 end
 
 #=
@@ -97,8 +109,14 @@ function step(state::Start, transition::Digit)
 end
 
 function step(state::Start, transition::Symbol)
-    state = Operator()
-    push!(state.raw, transition.raw)
+    if transition.raw in separators
+        sep_state = Separator()
+        push!(sep_state.raw, transition.raw)
+        save(store, sep_state)
+    else
+        state = Operator()
+        push!(state.raw, transition.raw)
+    end
     state
 end
 
@@ -117,9 +135,10 @@ end
 
 function step(state::Identifier, transition::Symbol)
     save(store, state)
-    state = Operator()
-    push!(state.raw, transition.raw)
-    state
+    #state = Operator()
+    state = Start()
+    step(state, transition)
+    #push!(state.raw, transition.raw)
 end
 
 function step(state::Identifier, transition::Whitespace)
@@ -138,9 +157,8 @@ end
 function step(state::Integer, transition::Symbol)
     if transition.raw != '.'
         save(store, state)
-        state = Operator()
-        push!(state.raw, transition.raw)
-        return state
+        state = Start()
+        return step(state, transition)
     end
     state = IntegerIntermezzo(state.raw)
 end
@@ -179,16 +197,35 @@ end
 function step(state::Real, transition::Symbol)
     state.raw = cat(state.praw, '.', state.araw, dims=1)
     save(store, state)
-    state = Operator()
-    push!(state.raw, transition.raw)
-    state
+    state = Start()
+    return step(state, transition)
 end
 
 # End Origin: Real
 
 # Origin: Operator
 function step(state::Operator, transition::Symbol)
-    push!(state.raw, transition.raw)
+    # change to Comment state if start of comment
+    if length(state.raw) > 0 && String(cat(state.raw[end], transition.raw, dims=1)) == "/*"
+        w = length(state.raw) - 1
+        if w > 0
+            preop_state = Operator()
+            for c in state.raw[1:end-1] 
+                push!(preop_state.raw, c)
+            end
+            save(store, preop_state)
+        end
+        state = Comment()
+    end
+    # check for separators
+    if transition.raw in separators
+        # save current operator state for transition to separator state
+        save(store, state)
+        sep_state = Separator()
+        push!(sep_state.raw, transition.raw)
+        save(store, sep_state)
+        state = Start()
+    end
     state
 end
 
@@ -212,6 +249,21 @@ function step(state::Operator, transition::Whitespace)
 end
 
 # End Origin: Operator
+
+# Origin: Comment
+# if in comment state, no transition matters except exit comment state operator
+function step(state::Comment, transition::Symbol)
+    push!(state.raw, transition.raw)
+    if length(state.raw) > 1 && String(state.raw[end-1:end]) == "*/"
+        state = Start()
+    end
+    state
+end
+
+function step(state::Comment, ::Transition)
+    state
+end
+# End Origin: Comment
 
 #=
     END STEPS
