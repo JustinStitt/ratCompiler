@@ -11,6 +11,8 @@ abstract type Transition end # ditto
 
 InvalidState = ArgumentError # Define ad-hoc error piggybacking ArgumentError
 
+store = Array{Pair{DataType, String}, 1}([])
+
 #=
     STATES
 =#
@@ -23,9 +25,10 @@ struct Integer <: State
     Integer() = new([])
 end
 
-struct Real <: State
+mutable struct Real <: State
     praw::Array{Char}
     araw::Array{Char}
+    raw::Array{Char}
     Real(x) = new(x, [])
 end
 
@@ -94,7 +97,7 @@ function step(state::Start, transition::Digit)
 end
 
 function step(state::Start, transition::Symbol)
-    state = Symbol()
+    state = Operator()
     push!(state.raw, transition.raw)
     state
 end
@@ -113,14 +116,14 @@ function step(state::Identifier, transition::Digit)
 end
 
 function step(state::Identifier, transition::Symbol)
-    println("Found Identifier: ", state.raw)
+    save(store, state)
     state = Operator()
     push!(state.raw, transition.raw)
     state
 end
 
 function step(state::Identifier, transition::Whitespace)
-    println("Found Identifier: ", state.raw)
+    save(store, state)
     state = Start()
 end
 
@@ -134,7 +137,7 @@ end
 
 function step(state::Integer, transition::Symbol)
     if transition.raw != '.'
-        println("Found Integer: ", state.raw)
+        save(store, state)
         state = Operator()
         push!(state.raw, transition.raw)
         return state
@@ -143,7 +146,7 @@ function step(state::Integer, transition::Symbol)
 end
 
 function step(state::Integer, transition::Whitespace)
-    println("Found Integer: ", state.raw)
+    save(store, state)
     state = Start()
     state
 end
@@ -168,12 +171,14 @@ function step(state::Real, transition::Digit)
 end
 
 function step(state::Real, transition::Whitespace)
-    println("Found Real: ", state.praw, state.araw)
+    state.raw = cat(state.praw, '.', state.araw, dims=1)
+    save(store, state)
     state = Start()
 end
 
 function step(state::Real, transition::Symbol)
-    println("Found Real: ", state.praw, state.araw)
+    state.raw = cat(state.praw, '.', state.araw, dims=1)
+    save(store, state)
     state = Operator()
     push!(state.raw, transition.raw)
     state
@@ -188,21 +193,21 @@ function step(state::Operator, transition::Symbol)
 end
 
 function step(state::Operator, transition::Letter)
-    println("Found Operator:", state.raw)
+    save(store, state)
     state = Identifier()
     push!(state.raw, transition.raw)
     state
 end
 
 function step(state::Operator, transition::Digit)
-    println("Found Operator: ", state.raw)
+    save(store, state)
     state = Integer()
     push!(state.raw, transition.raw)
     state
 end
 
 function step(state::Operator, transition::Whitespace)
-    println("Found Operator: ", state.raw)
+    save(store, state)
     state = Start()
 end
 
@@ -212,3 +217,7 @@ end
     END STEPS
 =#
 
+function save(store, state)
+    lex_buf = String(state.raw) # convert to String
+    push!(store, typeof(state)=>lex_buf)
+end

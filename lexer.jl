@@ -2,14 +2,14 @@ include("fsm.jl")
 
 struct alphabet
     letters::Set{Char}
-    digits::StepRange{Int64, Int64}
+    digits::Set{Char}
     symbols::Set{Char}
     whitespace::Set{Char}
     alphabet() = new(
         Set([[x for x in 'a':'z']..., 
              [x for x in 'A':'Z']...,
              '_']),
-        range(1, 10, step=1),
+        Set(Char.('0' .+ range(0, 9, step=1))),
         Set([';', '+', '*','/', 
              '\\', '-', ',', '(', ')', 
              '[', ']', '!', '>', '<', 
@@ -19,25 +19,26 @@ struct alphabet
     )
 end
 
-# define alphabet (set of valid characters)
-Σ = alphabet() 
+function parseInput(q0, inp, Σ)
+    for c in inp
+        if c in Σ.letters
+            q0 = step(q0, Letter(c))
+        elseif c in Σ.digits
+            q0 = step(q0, Digit(c))
+        elseif c in Σ.symbols
+            q0 = step(q0, Symbol(c))
+        elseif c in Σ.whitespace
+            q0 = step(q0, Whitespace())
+        else
+            println("bad input")
+        end
+    end
+end
 
-q0 = IntegerIntermezzo(['3', '6'])
+test_string = "231+num+foo+3.14;"
 
-q0 = step(q0, Digit('1'))
-q0 = step(q0, Whitespace())
+parseInput(Start(), test_string, alphabet())
 
+println("Input: ", test_string)
 
-q0 = Start() # starting state
-
-transition_buffer = [Digit('2'), Digit('3'), Digit('1'), Symbol('+'), 
-                Letter('n'), Letter('u'), Letter('m'), Symbol('+'), 
-                Letter('f'), Letter('o'), Letter('o'), Symbol('+'),
-                Digit('3'), Symbol('.'), Digit('1'), Digit('4'), 
-                Symbol(';')]
-
-reduce(step, transition_buffer, init=q0)
- 
-#=
-231+num+foo+3.14;
-=#
+display(store)
