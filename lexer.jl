@@ -1,4 +1,4 @@
-include("fsm.jl")
+include("./fsm.jl")
 
 struct alphabet
     letters::Set{Char}
@@ -15,7 +15,7 @@ struct alphabet
              '[', ']', '!', '>', '<', 
              '{', '}', '%', '&', '|', '^',
              '=', '.', '?', ':', '\'', '\"']),
-        Set([' ', '\n']),
+        Set([' ', '\n']),   
     )
 end
 
@@ -30,24 +30,30 @@ function parseInput(q0, inp, Σ)
         elseif c in Σ.whitespace
             q0 = step(q0, Whitespace())
         else
-            println("bad input")
+            println("*bad input*")
         end
     end
 end
 
-function test(test_cases)
-    Σ = alphabet()
-    for case in test_cases
-        println("Input: ", case)
-        parseInput(Start(), case, Σ) # ask lexer to step through input buffer
-        display(store) # show token=>lexeme store buffer
-        empty!(store) # empty our token=>lexeme store buffer
-        println()
+function main()
+    if length(ARGS) < 1
+        throw(ArgumentError("Must include input file name."))
     end
+    input_file = ARGS[1]
+    try
+        _f = open("./"*input_file) # try to open file
+    catch e
+        error("Cannot open input file \""*input_file*"\"") # couldn't find file in pwd
+    end
+    raw_input = read(input_file, String) # parse file to string raw
+
+    Σ = alphabet() # create alphabet sigma
+
+    println("Input: ", raw_input)
+    parseInput(Start(), raw_input, Σ) # ask lexer to step through input buffer
+    display() # show token=>lexeme store buffer
+    empty!() # empty our token=>lexeme store buffer
+    println()
 end
 
-test_cases = ["231+num+foo+3.14+(6-2.45+size);/*this is a comment 3.1415;*/", 
-              "while  (fahr <= upper)   a = 23.00;  /* this is sample */"
-             ]
-
-test(test_cases)
+main()

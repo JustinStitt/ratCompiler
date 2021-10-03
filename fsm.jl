@@ -15,6 +15,11 @@ store = Array{Pair{DataType, String}, 1}([])
 
 separators = Set{Char}([';','(',')'])
 
+keywords = Set{String}(["integer", "if", "else", "endif", 
+             "while", "return", "get", "put", 
+             "boolean", "real", "function",
+             "true", "false"])
+
 #=
     STATES
 =#
@@ -57,6 +62,11 @@ end
 struct Separator <: State
     raw::Array{Char}
     Separator() = new([])
+end
+
+struct Keyword <: State
+    raw::Array{Char}
+    Keyword(r) = new(r)
 end
 
 #=
@@ -269,7 +279,23 @@ end
     END STEPS
 =#
 
-function save(store, state)
+function save(store, state::Any)
     lex_buf = String(state.raw) # convert to String
     push!(store, typeof(state)=>lex_buf)
+end
+
+function save(store, state::Identifier)
+    lex_buf = String(state.raw) # convert to String
+    if lex_buf in keywords
+        state = Keyword(state.raw)
+    end
+    push!(store, typeof(state)=>lex_buf)
+end
+
+function display()
+    Base.display(store)
+end
+
+function empty!()
+    Base.empty!(store)
 end
