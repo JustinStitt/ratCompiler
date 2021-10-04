@@ -5,7 +5,7 @@ This lexical analyzer is capable of reading input from a .rat file and returning
 
 ###### Sample Input
 ```
-while  (fahr <= upper)   a = 23.00;  /* this is sample */
+while  (fahr <= upper)   a = 23.00;  /* this is a sample comment */
 ```
 ###### Output
 ![](./media/output1.png)
