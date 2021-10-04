@@ -13,7 +13,7 @@ InvalidState = ArgumentError # Define ad-hoc error piggybacking ArgumentError
 
 store = Array{Pair{DataType, String}, 1}([])
 
-separators = Set{Char}([';','(',')'])
+separators = Set{Char}([';','(',')','#',','])
 
 keywords = Set{String}(["integer", "if", "else", "endif", 
              "while", "return", "get", "put", 
@@ -226,6 +226,7 @@ function step(state::Operator, transition::Symbol)
             save(store, preop_state)
         end
         state = Comment()
+        return state
     end
     # check for separators
     if transition.raw in separators
@@ -235,7 +236,9 @@ function step(state::Operator, transition::Symbol)
         push!(sep_state.raw, transition.raw)
         save(store, sep_state)
         state = Start()
+        return state
     end
+    push!(state.raw, transition.raw)
     state
 end
 
@@ -293,7 +296,7 @@ function save(store, state::Identifier)
 end
 
 function display()
-    Base.display(store)
+    Base.show(stdout, "text/plain", store)
 end
 
 function empty!()

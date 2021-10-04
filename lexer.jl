@@ -7,14 +7,14 @@ struct alphabet
     whitespace::Set{Char}
     alphabet() = new(
         Set([[x for x in 'a':'z']..., 
-             [x for x in 'A':'Z']...,
-             '_']),
+            [x for x in 'A':'Z']...,
+            '_']),
         Set(Char.('0' .+ range(0, 9, step=1))),
         Set([';','(',')','+', '*','/', 
-             '\\', '-', ',', 
-             '[', ']', '!', '>', '<', 
-             '{', '}', '%', '&', '|', '^',
-             '=', '.', '?', ':', '\'', '\"']),
+            '\\', '-', ',', 
+            '[', ']', '!', '>', '<', 
+            '{', '}', '%', '&', '|', '^','#',
+            '=', '.', '?', ':', '\'', '\"']),
         Set([' ', '\n']),   
     )
 end
@@ -30,21 +30,23 @@ function parseInput(q0, inp, Σ)
         elseif c in Σ.whitespace
             q0 = step(q0, Whitespace())
         else
-            println("*bad input*")
+            println("**bad input: "*c)
         end
     end
 end
 
 function main()
-    if length(ARGS) < 1
-        throw(ArgumentError("Must include input file name."))
-    end
-    input_file = ARGS[1]
+    println("\nEnter RAT21F input file: ")
+    input_file = readline()
+
     try
         _f = open("./"*input_file) # try to open file
     catch e
-        error("Cannot open input file \""*input_file*"\"") # couldn't find file in pwd
+        println("Cannot open input file \""*input_file*"\"") # couldn't find file in pwd
+        main()
+        return
     end
+
     raw_input = read(input_file, String) # parse file to string raw
 
     Σ = alphabet() # create alphabet sigma
@@ -54,6 +56,9 @@ function main()
     display() # show token=>lexeme store buffer
     empty!() # empty our token=>lexeme store buffer
     println()
+
+    println("\n\n Press any key to quit... ")
+    _t = readline()
 end
 
 main()
