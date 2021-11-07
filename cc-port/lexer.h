@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_set>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -10,6 +11,9 @@ using str_set = std::unordered_set<std::string>;
 using chr_set = std::unordered_set<char>;
 
 namespace LexicalAnalyzer {
+
+    enum TYPE {letter = 0, digit, underscore, 
+            dot, symbol, slash, asterisk, whitespace, bad};
 
     namespace util {
 
@@ -57,19 +61,19 @@ namespace LexicalAnalyzer {
 
     class Lexer {
     private:
-        chr_set w, d, s;
+        chr_set w, d, s, ws;
         str_set separators, operators, keywords;
-
-        std::string next_tok;
-        std::string raw_inp;
-
-        enum TYPE {letter = 0, digit, underscore, 
-            dot, symbol, slash, asterisk};
+        std::unordered_map<size_t, std::string> accepting_states = 
+                    {
+                        {1, "Identifier"}, {2, "Integer"}, {4, "Real"},
+                        {5, "Operator"},   {6, "Operator"},{9, "Comment"},
+                        {10, "Separator"}, {11, "Keyword"}
+                    };
 
         static const size_t NUM_STATES = 10,
                      NUM_TRANSITIONS = 7;
         std::array<std::array<int, NUM_TRANSITIONS>, NUM_STATES> tmat =
-                    {{/*     w  d  _  .  s  /  *   */
+                    {{/*    w  d  _  .  s  /  *   */
                     /*0*/  {1, 2, 0, 0, 5, 6, 0},
                     /*1*/  {1, 1, 1, 0, 0, 0, 0},
                     /*2*/  {0, 2, 0, 3, 0, 0, 0},
@@ -81,6 +85,10 @@ namespace LexicalAnalyzer {
                     /*8*/  {7, 7, 7, 7, 7, 9, 7},
                     /*9*/  {0, 0, 0, 0, 0, 0, 0}
                     }};
+
+        std::string raw_inp;
+        std::string tok_buf;
+        size_t cstate, inp_idx;
     
         void readin(std::string filename) {
             std::ifstream input_file(filename);
@@ -89,20 +97,93 @@ namespace LexicalAnalyzer {
             this->raw_inp = buffer.str();
         }
 
-    public:
-        Lexer() {
-            throw std::invalid_argument("Please provide a filename... (example: \"test.rat\")\n");
+        TYPE classifyChar(const char& c) {
+            if(w.count(c)) {
+                return TYPE::letter;
+            }
+            else if(d.count(c)) {
+                return TYPE::digit;
+            }
+            else if(c == '_') {
+                return TYPE::underscore;
+            }
+            else if(c == '/') {
+                return TYPE::slash;
+            }
+            else if(c == '.') {
+                return TYPE::dot;
+            }
+            else if(c == '*') {
+                return TYPE::asterisk;
+            }
+            else if(s.count(c)) {
+                return TYPE::symbol;
+            }
+            else if(ws.count(c)) {
+                return TYPE::whitespace;
+            }
+            return TYPE::bad;
         }
 
-        Lexer(std::string fn) : next_tok("") {
+        bool step() {
+            /*  use transition matrix and current state 
+                alongside next character in raw input */
+            if(this->inp_idx >= this->raw_inp.size()) return false; // reached end of input
+            if(this->cstate == 0) this->tok_buf.clear();
+            char nc = this->raw_inp[this->inp_idx++];
+            this->tok_buf += nc;
+            TYPE inp_type = classifyChar(nc);
+            int new_state;
+            if(inp_type == TYPE::bad) 
+                std::cout << "bad char: " << nc << "\n";
+            else if(inp_type == TYPE::whitespace && this->cstate != 7) {
+                new_state = -1;
+            }
+            else {
+                new_state = this->tmat[this->cstate][inp_type];
+                if(new_state != -1)
+                    this->cstate = new_state;
+            }
+
+            if(new_state == -1 && this->cstate) { // no transition found
+                this->tok_buf.pop_back();
+                if(accepting_states[this->cstate].size() ) { // are we in an accepting state?
+                    if(accepting_states[this->cstate] != "Comment") {
+                        if(accepting_states[this->cstate] == "Identifier" && this->keywords.count(this->tok_buf)) {
+                            this->cstate = 11;
+                        }
+                        else if(accepting_states[this->cstate] == "Operator" && this->separators.count(this->tok_buf)) {
+                            this->cstate = 10;
+                        }
+                        std::cout << accepting_states[this->cstate] << " => " << this->tok_buf << "\n";
+                    }
+                } else { // not in an accepting state (improper token)
+                    std::cout << "Bad Token => " << this->tok_buf << " cstate: " << this->cstate << "\n";
+                }
+                this->cstate = 0;
+                this->tok_buf.clear();
+                this->inp_idx -= 1;
+            }
+            return true;
+        }
+
+    public:
+        
+
+        Lexer() {
+            throw std::invalid_argument("missing filename... (example: \"test.rat\")\n");
+        }
+
+        Lexer(std::string fn) : cstate(0), inp_idx(0), tok_buf("") {
             util::fillLetters(this->w);
             util::fillDigits(this->d);
             /* fill symbols */
             this->s = {';','(',')','+', '*','/', 
                 '\\', '-', ',', '`', '~',
-                '[', ']', '!', '>', '<', '$',
+                '[', ']', '!', '>', '<', /*'$',*/
                 '{', '}', '%', '&', '|', '^','#',
                 '=', '.', '?', ':', '\'', '\"'   };
+            this->ws = {' ', '\n', '\t'};
             /* fill separators */
             this->separators = {";", "(", ")", "#", ",", "{", "}"};
             /* fill operators */
@@ -116,6 +197,13 @@ namespace LexicalAnalyzer {
             /* replace 0's in transition matrix with -1's */
             util::replaceZeroes<int, NUM_STATES, NUM_TRANSITIONS>(this->tmat);
             this->readin(fn);
+            if(this->raw_inp.size() < 1) {
+                throw std::domain_error("\nFile is empty! Try again.\n");
+            }
+
+            while(this->step()) {
+                continue;
+            }
         }
 
         
