@@ -1,1 +1,14 @@
-foo + bar; 127.4
+function sum (abc, xyz integer)
+{
+           return abc + xyz;
+}
+
+#
+     
+     integer t1, t2;
+     t1 = 4;
+     t2 = 6;
+     
+     put(sum(t1, t2));
+
+#

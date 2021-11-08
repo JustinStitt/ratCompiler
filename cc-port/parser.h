@@ -26,7 +26,7 @@ private:
         std::cout << "\n" << std::string(49, '=') 
                         << "\n" << "|" << "\t\t\t\t\t\t" << "|" 
                         << "\n|" << "\t\t\t\t\t\t" << "|" 
-                        << "\n|\t\t" << msg << std::string(19-msg.size(), ' ')
+                        << "\n|\t\t" << msg << std::string(abs(19-msg.size()), ' ')
                         << "\t\t|" 
                         << "\n" << "|" << "  \t\t\t\t\t\t" << "|" 
                         << "\n" << "|" << "\t\t\t\t\t\t" << "|"
@@ -39,7 +39,7 @@ private:
             boxMessage("Parsing Successful!");
         }
         else {
-            boxMessage("Parsing Unsuccessful.");
+            boxMessage("Parsing Unsuccessful. See Errors.");
         }
     }
 
@@ -175,7 +175,7 @@ public:
 
         auto nb = nextBuf();
         // if qualifier
-        if(nextState() == "Keyword" && nb == "integer" || nb == "boolean" || nb == "real") {
+        if(nextState() == "Keyword" && (nb == "integer" || nb == "boolean" || nb == "real")) {
             DeclarationList();
         } else Empty();
     }
@@ -188,7 +188,7 @@ public:
         if(nextState() == "Separator" && nextBuf() == ";") {
             scan();
             auto nb = nextBuf();
-            if(nextState() == "Keyword" && nb == "integer" || nb == "boolean" || nb == "real") {
+            if(nextState() == "Keyword" && (nb == "integer" || nb == "boolean" || nb == "real")) {
                 DeclarationList();
             }
         } else printError("Missing ';' in declaration list.");
@@ -213,6 +213,7 @@ public:
                 IDs();
             }
         }
+        else printError("Type{" + nextState() + "} not allowed in ID list.");
     }
 
     void StatementList() { // R14
@@ -251,6 +252,9 @@ public:
             }
             else if(nb == "while") {
                 While();
+            }
+            else {
+                printError("Wrong type {" + nextState() + "} inputed.");
             }
         }
         else {
@@ -504,7 +508,7 @@ public:
                 IDs();
                 if(nextState() == "Separator" && nextBuf() == ")") {
                     scan();
-                } else printError("Missing Closing Parenthesis for ID list.");
+                } else printError("Missing Closing Parenthesis for ID list, next state was actually: " + nextState() + " => " + nextBuf());
             }   
         }
         else if(nextState() == "Integer") {
