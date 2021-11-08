@@ -12,6 +12,20 @@ int main(int arg, char** args) {
         return -1;
     }
 
+    bool has_extension = false;
+    
+    for(int idx = 0; args[1][idx] != '\0'; ++idx) {
+        if(args[1][idx] == '.') {
+            has_extension = true;
+            break;
+        }
+    }
+
+    if(!has_extension) {
+        std::cout << "Filename has no file extension. Please add one. (example: \"test.rat\") \n";
+        return -1;
+    }
+
     Parser parser(args[1]);
 
     return 0;
