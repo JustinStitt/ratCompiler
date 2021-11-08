@@ -28,8 +28,12 @@ static std::unordered_map<int, std::string> rule = {
 {22, "<While> ::= while ( <Condition> ) <Statement>"},
 {23, "<Condition> ::= <Expression> <Relop> <Expression>"},
 {24, "<Relop> ::= == | != | > | < | <= | =>"},
-{25, "<Expression> ::= <Expression> + <Term> | <Expression> - <Term> | <Term>"},
-{26, "<Term> ::= <Term> * <Factor> | <Term> / <Factor> | <Factor>"},
+/*{25, "<Expression> ::= <Expression> + <Term> | <Expression> - <Term> | <Term>"},*/
+{25,  "<Expression> ::= <Term> <Expression_Prime>"},
+{251, "<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε"},
+/*{26, "<Term> ::= <Term> * <Factor> | <Term> / <Factor> | <Factor>"},*/
+{26, "<Term> ::= <Factor> <Term_Prime>"},
+{261, "Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>"},
 {27, "<Factor> ::= - <Primary> | <Primary>"},
 {28, "<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false"},
 {29, "<Empty> ::= "}

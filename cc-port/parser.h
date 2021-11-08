@@ -384,7 +384,7 @@ public:
             scan();
         } else printError("Invalid relational operator.");
     }
-
+/*
     void Expression() { // R25
         //TO-DO remove left recursion.
         printRule(25);
@@ -402,8 +402,31 @@ public:
             }
         }
         
+    }*/
+
+    void Expression() { // R25
+        printRule(25);
+
+        Term();
+        Expression_Prime();
     }
 
+    void Expression_Prime() { // R25.1
+        printRule(251);
+        if(nextState() == "Operator") {
+            if(nextBuf() == "+"){
+                scan();
+                Term();
+                Expression_Prime();
+            }
+            else if(nextBuf() == "-") {
+                scan();
+                Term();
+                Expression_Prime();
+            }
+        }
+    }
+/*
     bool Term() { // R26
         //TO-DO remove left recursion.
         printRule(26);
@@ -424,6 +447,29 @@ public:
 
         return true;
         
+    }*/
+
+    void Term() { // R26
+        printRule(26);
+        Factor();
+        Term_Prime();
+    }
+
+    void Term_Prime() { // R 26.1
+        printRule(261);
+        if(nextState() == "Operator") {
+            if(nextBuf() == "*") {
+                scan();
+                Factor();
+                Term_Prime();
+            }
+            else if(nextBuf() == "/") {
+                scan();
+                Factor();
+                Term_Prime();
+            }
+        }
+        else Factor();
     }
 
     bool Factor() { // R27
