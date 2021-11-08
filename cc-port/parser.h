@@ -22,13 +22,24 @@ private:
         auto r = lex.scan();
     }
 
+    void boxMessage(std::string msg) {
+        std::cout << "\n" << std::string(49, '=') 
+                        << "\n" << "|" << "\t\t\t\t\t\t" << "|" 
+                        << "\n|" << "\t\t\t\t\t\t" << "|" 
+                        << "\n|\t\t" << msg << std::string(19-msg.size(), ' ')
+                        << "\t\t|" 
+                        << "\n" << "|" << "  \t\t\t\t\t\t" << "|" 
+                        << "\n" << "|" << "\t\t\t\t\t\t" << "|"
+                        << "\n" << std::string(49, '=') << "\n" << std::flush;
+    }
+
     void start() {
         Rat21F(); // starting state
         if(nextState() == "Eof" && nextBuf() == "$") {
-            std::cout << "\nParsing Successful!\n"<< std::flush;
+            boxMessage("Parsing Successful!");
         }
         else {
-            std::cout << "\nParsing Unsuccessful.\n"<< std::flush;
+            boxMessage("Parsing Unsuccessful.");
         }
     }
 
