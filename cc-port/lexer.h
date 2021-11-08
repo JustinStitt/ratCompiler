@@ -59,6 +59,13 @@ namespace LexicalAnalyzer {
 
     } // end util namespace
 
+    struct Token {
+        std::string state;
+        std::string buf;
+
+        Token(std::string _s, std::string _b) : state(_s), buf(_b) {}
+    };
+
     class Lexer {
     private:
         chr_set w, d, s, ws;
@@ -74,12 +81,12 @@ namespace LexicalAnalyzer {
                      NUM_TRANSITIONS = 7;
         std::array<std::array<int, NUM_TRANSITIONS>, NUM_STATES> tmat =
                     {{/*    w  d  _  .  s  /  *   */
-                    /*0*/  {1, 2, 0, 0, 5, 6, 0},
+                    /*0*/  {1, 2, 0, 0, 5, 6, 5},
                     /*1*/  {1, 1, 1, 0, 0, 0, 0},
                     /*2*/  {0, 2, 0, 3, 0, 0, 0},
                     /*3*/  {0, 4, 0, 0, 0, 0, 0},
                     /*4*/  {0, 4, 0, 0, 0, 0, 0},
-                    /*5*/  {0, 0, 0, 0, 5, 0, 0},
+                    /*5*/  {0, 0, 0, 0, 5, 0, 5},
                     /*6*/  {0, 0, 0, 0, 0, 0, 7},
                     /*7*/  {7, 7, 7, 7, 7, 7, 8},
                     /*8*/  {7, 7, 7, 7, 7, 9, 7},
@@ -125,17 +132,28 @@ namespace LexicalAnalyzer {
             return TYPE::bad;
         }
 
-        bool step() {
+
+        Token* step() {
             /*  use transition matrix and current state 
                 alongside next character in raw input */
-            if(this->inp_idx >= this->raw_inp.size()) return false; // reached end of input
-            if(this->cstate == 0) this->tok_buf.clear();
+
+            if(this->inp_idx >= this->raw_inp.size()) {
+                this->cstate = 0;
+                Token* tmp = new Token("Eof", "$");
+                return tmp;
+            }; // reached end of input
             char nc = this->raw_inp[this->inp_idx++];
+
+            if(this->cstate == 0) {
+                this->tok_buf.clear();
+            }
+
             this->tok_buf += nc;
             TYPE inp_type = classifyChar(nc);
             int new_state;
-            if(inp_type == TYPE::bad) 
+            if(inp_type == TYPE::bad) {
                 std::cout << "bad char: " << nc << "\n";
+            }
             else if(inp_type == TYPE::whitespace && this->cstate != 7) {
                 new_state = -1;
             }
@@ -145,6 +163,14 @@ namespace LexicalAnalyzer {
                     this->cstate = new_state;
             }
 
+            if(this->separators.count(this->tok_buf)) {
+                Token* tmp = new Token("Separator", this->tok_buf);
+                this->tok_buf.clear();
+                this->cstate = 0;
+                return tmp;
+            }
+
+            Token* nt = nullptr;
             if(new_state == -1 && this->cstate) { // no transition found
                 this->tok_buf.pop_back();
                 if(accepting_states[this->cstate].size() ) { // are we in an accepting state?
@@ -155,7 +181,8 @@ namespace LexicalAnalyzer {
                         else if(accepting_states[this->cstate] == "Operator" && this->separators.count(this->tok_buf)) {
                             this->cstate = 10;
                         }
-                        std::cout << accepting_states[this->cstate] << " => " << this->tok_buf << "\n";
+                        nt = new Token(accepting_states[this->cstate], this->tok_buf);
+                        // std::cout << "\n" <<accepting_states[this->cstate] << " *=>* " << this->tok_buf << "\n";
                     }
                 } else { // not in an accepting state (improper token)
                     std::cout << "Bad Token => " << this->tok_buf << " cstate: " << this->cstate << "\n";
@@ -164,7 +191,7 @@ namespace LexicalAnalyzer {
                 this->tok_buf.clear();
                 this->inp_idx -= 1;
             }
-            return true;
+            return nt;
         }
 
     public:
@@ -200,14 +227,33 @@ namespace LexicalAnalyzer {
             if(this->raw_inp.size() < 1) {
                 throw std::domain_error("\nFile is empty! Try again.\n");
             }
+            this->raw_inp.push_back(' ');
 
-            while(this->step()) {
-                continue;
+        }
+
+        Token* next() { // lookahead 1
+            /* snapshot everything we want to remain */
+            auto tok_buf_snapshot = this->tok_buf;
+            auto inp_idx_snapshot = this->inp_idx;
+            auto cstate_snapshot = this->cstate;
+            /* scan next token */
+            auto ret = this->scan();
+            /* restore snapshots */
+            this->tok_buf = tok_buf_snapshot;
+            this->inp_idx = inp_idx_snapshot;
+            this->cstate = cstate_snapshot;
+            return ret;
+        }
+
+        Token* scan() {
+            Token* ret = nullptr;
+            while(ret == nullptr) {
+                ret = this->step();
             }
+            return ret;
         }
 
         
-
 
     }; // end Lexer class
 
