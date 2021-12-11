@@ -1,6 +1,8 @@
 #pragma once
 #include "lexer.h"
 #include "rules.h"
+#include "symbol_table.h"
+#include <map>
 
 using namespace LexicalAnalyzer;
 
@@ -8,6 +10,8 @@ using namespace LexicalAnalyzer;
 class Parser {
 private:
     Lexer lex;
+    SymbolTable symbol_table;
+    
 
     std::string nextState() {
         return this->lex.next()->state;
@@ -537,4 +541,4 @@ public:
     }
 
 
-};
+}; // end Parser class
