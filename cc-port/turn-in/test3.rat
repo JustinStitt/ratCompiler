@@ -1,0 +1,27 @@
+function sum (abc, xyz integer)
+{
+           return abc + xyz;
+}
+
+function midpoint(p1 , p2 real)
+{
+    total = p1 + p2;
+    return total / 2;
+}
+
+#
+     
+     real p1, p2, p3, p4, p5, p6;
+     p1 = 4.12;
+     p2 = 3.14;
+     p3 = -356.12;
+     p4 = 16.1444;
+     p5 = 25.7;
+     p6 = 311.14;
+     
+     put(midpoint(p1,p2));
+     put(midpoint(p3,p4));
+     put(midpoint(p5,p6));
+
+
+#
