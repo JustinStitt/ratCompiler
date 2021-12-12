@@ -1,0 +1,216 @@
+$ ./Parser.exe
+Enter a filename (with .rat extension): test1.rat
+Separator => #
+<Rat21F> ::= <Opt Function Definitions> # <Opt Declaration List> <Statement List> #
+Separator => #
+<Opt Function Definitions> ::= <Function Definitions> | <Empty>
+Separator => #
+<Empty> ::= 
+Separator => #
+Keyword => integer
+<Opt Declaration List> ::= <Declaration List> | <Empty>
+Keyword => integer
+<Declaration List> := <Declaration> ; | <Declaration> ; <Declaration List>
+Keyword => integer
+<Declaration> ::= <Qualifier > <IDs>
+Keyword => integer
+<Qualifier> ::= integer | boolean | real
+Keyword => integer
+Identifier => i
+<IDs> ::= <Identifier> | <Identifier>, <IDs>
+Identifier => i
+Separator => ,
+Identifier => max
+<IDs> ::= <Identifier> | <Identifier>, <IDs>
+Identifier => max
+Separator => ;
+Identifier => i
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Identifier => i
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Identifier => i
+<Assign> ::= <Identifier> = <Expression> ;
+Identifier => i
+Operator => =
+Integer => 4
+<Expression> ::= <Term> <Expression_Prime>
+Integer => 4
+<Term> ::= <Factor> <Term_Prime>
+Integer => 4
+<Factor> ::= - <Primary> | <Primary>
+Integer => 4
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Integer => 4
+Separator => ;
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Separator => ;
+<Factor> ::= - <Primary> | <Primary>
+Separator => ;
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Separator => ;
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Separator => ;
+Identifier => max
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Identifier => max
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Identifier => max
+<Assign> ::= <Identifier> = <Expression> ;
+Identifier => max
+Operator => =
+Integer => 6
+<Expression> ::= <Term> <Expression_Prime>
+Integer => 6
+<Term> ::= <Factor> <Term_Prime>
+Integer => 6
+<Factor> ::= - <Primary> | <Primary>
+Integer => 6
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Integer => 6
+Separator => ;
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Separator => ;
+<Factor> ::= - <Primary> | <Primary>
+Separator => ;
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Separator => ;
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Separator => ;
+Keyword => while
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Keyword => while
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Keyword => while
+<While> ::= while ( <Condition> ) <Statement>
+Keyword => while
+Separator => (
+Identifier => i
+<Condition> ::= <Expression> <Relop> <Expression>
+Identifier => i
+<Expression> ::= <Term> <Expression_Prime>
+Identifier => i
+<Term> ::= <Factor> <Term_Prime>
+Identifier => i
+<Factor> ::= - <Primary> | <Primary>
+Identifier => i
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+
+next buf is: i
+Identifier => i
+Operator => <
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Operator => <
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Operator => <
+<Relop> ::= == | != | > | < | <= | =>
+Operator => <
+Identifier => max
+<Expression> ::= <Term> <Expression_Prime>
+Identifier => max
+<Term> ::= <Factor> <Term_Prime>
+Identifier => max
+<Factor> ::= - <Primary> | <Primary>
+Identifier => max
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+
+next buf is: max
+Identifier => max
+Separator => )
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Separator => )
+<Factor> ::= - <Primary> | <Primary>
+Separator => )
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Separator => )
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Separator => )
+Separator => {
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Separator => {
+<Compound> ::= { <Statement List> }
+Separator => {
+Identifier => i
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Identifier => i
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Identifier => i
+<Assign> ::= <Identifier> = <Expression> ;
+Identifier => i
+
+
+**ERROR** symbol 'i' already exists in the symbol table with memory address: 7000
+
+Operator => =
+Identifier => i
+<Expression> ::= <Term> <Expression_Prime>
+Identifier => i
+<Term> ::= <Factor> <Term_Prime>
+Identifier => i
+<Factor> ::= - <Primary> | <Primary>
+Identifier => i
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+
+next buf is: i
+Identifier => i
+Operator => +
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Operator => +
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Operator => +
+Integer => 1
+<Term> ::= <Factor> <Term_Prime>
+Integer => 1
+<Factor> ::= - <Primary> | <Primary>
+Integer => 1
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Integer => 1
+Separator => ;
+Term_Prime ::= * <Factor> <Term_Prime> | / <Factor> <Term_Prime> | <Factor>
+Separator => ;
+<Factor> ::= - <Primary> | <Primary>
+Separator => ;
+<Primary> ::= <Identifier> | <Integer> | <Identifier> ( <IDs> ) | ( <Expression> ) | <Real> | true | false
+Separator => ;
+<Expression_Prime> ::= + <Term> <Expression_Prime> | - <Term> <Expression_Prime> | ε
+Separator => ;
+Separator => }
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Separator => }
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Separator => }
+Separator => #
+<Statement List> ::= <Statement> | <Statement> <Statement List>
+Separator => #
+<Statement> ::= <Compound> | <Assign> | <If> | <Return> | <Print> | <Scan> | <While>
+Separator => #
+
+=================================================
+|                                               |
+|                                               |
+|               Parsing Successful!             |
+|                                               |
+|                                               |
+=================================================
+
+Instructions Table:
+==================================================
+              1 PUSHI    4
+              2  POPM 7000
+              3 PUSHI    6
+              4  POPM 7001
+              5 LABEL
+              6 PUSHM 7000
+              7 PUSHM 7001
+              8   LES
+              9 JUMPZ   15
+             10 PUSHM 7000
+             11 PUSHI    1
+             12   ADD
+             13  POPM 7000
+             14  JUMP    5
+
+SYMBOL TABLE:
+==================================================
+              i : 7000   integer
+            max : 7001   integer
+==================================================

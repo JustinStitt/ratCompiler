@@ -1,0 +1,8 @@
+#
+integer i, max;
+i = 4;
+max = 6;
+if (i < max) {
+    i = i + 1;
+} endif
+#
